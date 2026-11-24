@@ -18,6 +18,8 @@ Le script `tests/contrats.sql` a renvoyé **« 20 contrats SQL réussis ; fixtur
 
 Après le test : **13 tables**, RLS activé sur les 13, **8 objectifs**, **0 séance**, **1 dossier brouillon**, **0 fixture persistante**. Le site existant conserve son projet et la même empreinte de données avant/après l’installation.
 
+La lecture REST a aussi été vérifiée avec le script Node.js livré et une clé publiable active : version `carnet-sd-1`, aucun dossier publié, quatre axes et durées `null`. La clé ne figure pas dans la réponse. Les huit requêtes de lecture du fichier 05 s’exécutent sans erreur.
+
 ## Conseillers Supabase
 
 Le contrôle de sécurité du projet ne signale aucune anomalie. Le contrôle de performance ne signale aucune clé étrangère sans index dans `atelier_sd`.
@@ -27,6 +29,8 @@ Certains index de la nouvelle base sont encore inutilisés, ce qui est attendu s
 ## Reproduction
 
 Le workflow GitHub utilise un conteneur PostgreSQL 17 de test et des rôles sans connexion `anon` / `authenticated`. Il exécute l’installation et les mêmes contrats SQL. Il n’a ni clé Supabase ni accès à la base hébergée. Son résultat est visible dans l’onglet Actions du dépôt.
+
+La [vérification GitHub sur une base vierge](https://github.com/ADLIB-Mrani/Test-Portfolio24-11/actions/runs/45441101823) a réussi pour le commit `ffc35d190f8f8bf4ea1ee7ec6348dcc6ab8ba41d` : installation, contrats et exemple annulé.
 
 L’exemple de séance reste annulé après exécution. Aucun test n’invente une durée enregistrée de manière permanente.
 
