@@ -1,0 +1,45 @@
+name: Contrats PostgreSQL
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contrats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local_test_only
+          POSTGRES_DB: carnet_test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d carnet_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      CARNET_PG_CONTAINER: ${{ job.services.postgres.id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Installer le modèle dans la base de test
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sql_file in tests/roles_ci.sql database/01_structure.sql database/02_vues.sql database/03_supabase.sql database/04_demarrage.sql; do
+            docker exec -i "$CARNET_PG_CONTAINER" psql -U postgres -d carnet_test -X -v ON_ERROR_STOP=1 < "$sql_file"
+          done
+      - name: Vérifier les contrats
+        shell: bash
+        run: docker exec -i "$CARNET_PG_CONTAINER" psql -U postgres -d carnet_test -X -v ON_ERROR_STOP=1 < tests/contrats.sql
+      - name: Vérifier l’exemple annulé
+        shell: bash
+        run: docker exec -i "$CARNET_PG_CONTAINER" psql -U postgres -d carnet_test -X -v ON_ERROR_STOP=1 < examples/une_seance.sql
